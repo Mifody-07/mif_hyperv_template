@@ -107,6 +107,23 @@ zabbix_export:
           value_type: FLOAT
           units: B
           params: 'last(//hyperv.mem.host.free) - sum(last_foreach(/{HOST.HOST}/hyperv.vm.mem.headroom[*])) - {$HV.MEM.RESERVE}'
+        - uuid: 23e3d3e813a14ccabf891d8bbfc9d1e7
+          name: 'Память хоста: всего простаивает по ВМ (перевыделено)'
+          type: CALCULATED
+          key: hyperv.mem.waste_total
+          history: 31d
+          value_type: FLOAT
+          units: B
+          params: 'sum(last_foreach(/{HOST.HOST}/hyperv.vm.mem.waste[*]))'
+          triggers:
+            - uuid: 4badb4f7502e4e59845b736f19bd6865
+              expression: 'last(/mif_hyperv_template/hyperv.mem.waste_total)>{$HV.MEM.WASTE.WARN}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'last(/mif_hyperv_template/hyperv.mem.waste_total)<{$HV.MEM.WASTE.WARN}-4G'
+              name: '{HOST.NAME}: на хосте много простаивающей ОЗУ, есть что высвободить'
+              priority: INFO
+              description: 'Суммарно по статическим ВМ хоста простаивает больше {$HV.MEM.WASTE.WARN} (выделено, но не используется). Поджав раздутые ВМ (уменьшить выделенную память или включить динамическую), можно освободить память под новые ВМ без покупки железа. Смотри соты/таблицу "перевыделено" по ВМ, чтобы найти конкретных виновников.'
+              manual_close: 'YES'
       discovery_rules:
         - uuid: e0b2d6a6fc1e4d5dabb77ed83537e6d6
           name: 'Hyper-V VM discovery'
@@ -304,3 +321,6 @@ zabbix_export:
         - macro: '{$HV.VM.OVERPROV.MIN}'
           value: 4G
           description: 'Минимальный объём простаивающей памяти, ниже которого перевыделение не флагается (чтобы не шуметь на мелких ВМ). По умолчанию 4 ГиБ.'
+        - macro: '{$HV.MEM.WASTE.WARN}'
+          value: 32G
+          description: 'Порог суммарного простоя ОЗУ по всем ВМ хоста: если впустую выделено больше — триггер подсказывает, что есть что высвободить. По умолчанию 32 ГиБ.'
