@@ -284,6 +284,16 @@ zabbix_export:
                 - operator: REGEXP
                   value: 'память (минимум|максимум)|запас памяти'
                   discover: NO_DISCOVER
+            - name: 'Dynamic memory - hide waste'
+              step: '2'
+              filter:
+                conditions:
+                  - macro: '{#VMDYNAMIC}'
+                    value: ^1$
+              operations:
+                - operator: REGEXP
+                  value: 'перевыделено памяти'
+                  discover: NO_DISCOVER
       macros:
         - macro: '{$HV.MEM.RESERVE}'
           value: '4294967296'
