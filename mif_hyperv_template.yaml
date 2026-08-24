@@ -267,10 +267,10 @@ zabbix_export:
                 key: hyperv.vm.data
           trigger_prototypes:
             - uuid: aa5a257a94d749fa90679e5f6a0692f7
-              expression: 'last(/mif_hyperv_template/hyperv.vm.dynamic[{#VMNAME}])=0 and max(/mif_hyperv_template/hyperv.vm.mem.demand[{#VMNAME}],30d)<last(/mif_hyperv_template/hyperv.vm.mem.assigned[{#VMNAME}])*{$HV.VM.OVERPROV.RATIO} and last(/mif_hyperv_template/hyperv.vm.mem.assigned[{#VMNAME}])-max(/mif_hyperv_template/hyperv.vm.mem.demand[{#VMNAME}],30d)>{$HV.VM.OVERPROV.MIN}'
+              expression: 'last(/mif_hyperv_template/hyperv.vm.dynamic[{#VMNAME}])=0 and max(/mif_hyperv_template/hyperv.vm.mem.demand[{#VMNAME}],30d)<last(/mif_hyperv_template/hyperv.vm.mem.assigned[{#VMNAME}])*{$HV.VM.OVERPROV.RATIO} and last(/mif_hyperv_template/hyperv.vm.mem.assigned[{#VMNAME}])-max(/mif_hyperv_template/hyperv.vm.mem.demand[{#VMNAME}],30d)>{$HV.VM.OVERPROV.MIN} and max(/mif_hyperv_template/hyperv.vm.mem.demand[{#VMNAME}],1d:now-29d)>=0'
               name: '{#VMNAME}: похоже на перевыделение ОЗУ (статическая память простаивает месяц)'
               priority: INFO
-              description: 'У статической ВМ пиковая потребность (demand) за 30 дней ниже {$HV.VM.OVERPROV.RATIO} от выделенного, и впустую висит более {$HV.VM.OVERPROV.MIN}. Возможно, стоит уменьшить выделенную память или включить динамическую. Окно 30 дней специально захватывает месячные пики 1С (закрытие периода, ЗП). Проверь график выделено/потребность перед изменением — вдруг пик нужен редко.'
+              description: 'У статической ВМ пиковая потребность (demand) за 30 дней ниже {$HV.VM.OVERPROV.RATIO} от выделенного, и впустую висит более {$HV.VM.OVERPROV.MIN}. Возможно, стоит уменьшить выделенную память или включить динамическую. Окно 30 дней специально захватывает месячные пики 1С (закрытие периода, ЗП). ВАЖНО: триггер молчит, пока не накопится 30 дней истории demand (защитный член max(...,1d:now-29d) до этого держит триггер в состоянии Unknown) — то есть первые выводы только через месяц наблюдений. Проверь график выделено/потребность перед изменением — вдруг пик нужен редко.'
               manual_close: 'YES'
           master_item:
             key: hyperv.vm.data
