@@ -78,7 +78,7 @@ zabbix_export:
           type: CALCULATED
           key: hyperv.mem.available
           history: 7d
-          value_type: UNSIGNED
+          value_type: FLOAT
           units: B
           params: 'last(//hyperv.mem.host.free) - {$HV.MEM.RESERVE}'
         - uuid: 53c10bf01e0c4021b2791db2880075e5
@@ -86,7 +86,7 @@ zabbix_export:
           type: CALCULATED
           key: hyperv.mem.available_worstcase
           history: 7d
-          value_type: UNSIGNED
+          value_type: FLOAT
           units: B
           params: 'last(//hyperv.mem.host.free) - sum(last_foreach(/{HOST.HOST}/hyperv.vm.mem.headroom[*])) - {$HV.MEM.RESERVE}'
       discovery_rules:
@@ -209,6 +209,9 @@ zabbix_export:
                       var data = JSON.parse(value);
                       for (var i = 0; i < data.length; i++) {
                         if (data[i].name === '{#VMNAME}') {
+                          if (data[i].dynamic !== 1) {
+                            return 0;
+                          }
                           return data[i].maximum - data[i].assigned;
                         }
                       }
