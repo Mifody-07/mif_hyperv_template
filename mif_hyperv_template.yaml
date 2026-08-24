@@ -133,7 +133,7 @@ zabbix_export:
               name: '{#VMNAME}: память выделено'
               type: DEPENDENT
               key: 'hyperv.vm.mem.assigned[{#VMNAME}]'
-              history: 7d
+              history: 31d
               units: B
               preprocessing:
                 - type: JSONPATH
@@ -142,10 +142,10 @@ zabbix_export:
               master_item:
                 key: hyperv.vm.data
             - uuid: 004c7dca7df44640a0e258f44ea23f7b
-              name: '{#VMNAME}: память запрошено'
+              name: '{#VMNAME}: потребность памяти (demand)'
               type: DEPENDENT
               key: 'hyperv.vm.mem.demand[{#VMNAME}]'
-              history: 7d
+              history: 31d
               units: B
               preprocessing:
                 - type: JSONPATH
@@ -214,7 +214,7 @@ zabbix_export:
               master_item:
                 key: hyperv.vm.data
             - uuid: 62c76183659c4a73bdde503c54fe8dcb
-              name: '{#VMNAME}: запас памяти (max−выделено)'
+              name: '{#VMNAME}: запас памяти (максимум минус выделено)'
               type: DEPENDENT
               key: 'hyperv.vm.mem.headroom[{#VMNAME}]'
               history: 7d
@@ -237,10 +237,10 @@ zabbix_export:
               master_item:
                 key: hyperv.vm.data
             - uuid: c885fb44bea347fdaaa52cf56bad9504
-              name: '{#VMNAME}: перевыделено памяти (выделено − demand)'
+              name: '{#VMNAME}: перевыделено памяти (выделено минус потребность)'
               type: DEPENDENT
               key: 'hyperv.vm.mem.waste[{#VMNAME}]'
-              history: 7d
+              history: 31d
               value_type: UNSIGNED
               units: B
               preprocessing:
@@ -259,10 +259,10 @@ zabbix_export:
                 key: hyperv.vm.data
           trigger_prototypes:
             - uuid: aa5a257a94d749fa90679e5f6a0692f7
-              expression: 'last(/mif_hyperv_template/hyperv.vm.dynamic[{#VMNAME}])=0 and max(/mif_hyperv_template/hyperv.vm.mem.demand[{#VMNAME}],7d)<last(/mif_hyperv_template/hyperv.vm.mem.assigned[{#VMNAME}])*{$HV.VM.OVERPROV.RATIO} and last(/mif_hyperv_template/hyperv.vm.mem.assigned[{#VMNAME}])-max(/mif_hyperv_template/hyperv.vm.mem.demand[{#VMNAME}],7d)>{$HV.VM.OVERPROV.MIN}'
-              name: '{#VMNAME}: похоже на перевыделение ОЗУ (статическая память простаивает неделю)'
+              expression: 'last(/mif_hyperv_template/hyperv.vm.dynamic[{#VMNAME}])=0 and max(/mif_hyperv_template/hyperv.vm.mem.demand[{#VMNAME}],30d)<last(/mif_hyperv_template/hyperv.vm.mem.assigned[{#VMNAME}])*{$HV.VM.OVERPROV.RATIO} and last(/mif_hyperv_template/hyperv.vm.mem.assigned[{#VMNAME}])-max(/mif_hyperv_template/hyperv.vm.mem.demand[{#VMNAME}],30d)>{$HV.VM.OVERPROV.MIN}'
+              name: '{#VMNAME}: похоже на перевыделение ОЗУ (статическая память простаивает месяц)'
               priority: INFO
-              description: 'У статической ВМ пиковый спрос (demand) за неделю ниже {$HV.VM.OVERPROV.RATIO} от выделенного, и впустую висит более {$HV.VM.OVERPROV.MIN}. Возможно, стоит уменьшить выделенную память или включить динамическую. Проверь график выделено/demand перед изменением — вдруг ВМ нужен пик редко.'
+              description: 'У статической ВМ пиковая потребность (demand) за 30 дней ниже {$HV.VM.OVERPROV.RATIO} от выделенного, и впустую висит более {$HV.VM.OVERPROV.MIN}. Возможно, стоит уменьшить выделенную память или включить динамическую. Окно 30 дней специально захватывает месячные пики 1С (закрытие периода, ЗП). Проверь график выделено/потребность перед изменением — вдруг пик нужен редко.'
               manual_close: 'YES'
           master_item:
             key: hyperv.vm.data
