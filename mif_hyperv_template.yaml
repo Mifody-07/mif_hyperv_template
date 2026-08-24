@@ -9,10 +9,6 @@ zabbix_export:
       name: mif_hyperv_template
       groups:
         - name: Templates/Hyper-V
-      macros:
-        - macro: '{$HV.MEM.RESERVE}'
-          value: '4294967296'
-          description: 'Резерв ОЗУ на стабильность хоста, в байтах (по умолчанию 4 ГиБ). Вычитается при расчёте "доступно под новые ВМ". Можно переопределить для конкретного хоста на вкладке Хосты -> Макросы.'
       items:
         - uuid: 77fdd9ddca924a7da31e61618a1d1e27
           name: 'Host memory: raw data'
@@ -257,3 +253,7 @@ zabbix_export:
                 - operator: REGEXP
                   value: 'memory (minimum|maximum)'
                   discover: NO_DISCOVER
+      macros:
+        - macro: '{$HV.MEM.RESERVE}'
+          value: '4294967296'
+          description: 'Резерв ОЗУ на стабильность хоста, в байтах (по умолчанию 4 ГиБ). Вычитается при расчёте "доступно под новые ВМ". Можно переопределить для конкретного хоста на вкладке Хосты -> Макросы.'
