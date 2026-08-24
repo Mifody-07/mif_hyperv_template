@@ -236,6 +236,34 @@ zabbix_export:
                       return 0;
               master_item:
                 key: hyperv.vm.data
+            - uuid: c885fb44bea347fdaaa52cf56bad9504
+              name: '{#VMNAME}: перевыделено памяти (выделено − demand)'
+              type: DEPENDENT
+              key: 'hyperv.vm.mem.waste[{#VMNAME}]'
+              history: 7d
+              value_type: UNSIGNED
+              units: B
+              preprocessing:
+                - type: JAVASCRIPT
+                  parameters:
+                    - |-
+                      var data = JSON.parse(value);
+                      for (var i = 0; i < data.length; i++) {
+                        if (data[i].name === '{#VMNAME}') {
+                          var w = data[i].assigned - data[i].demand;
+                          return w > 0 ? w : 0;
+                        }
+                      }
+                      return 0;
+              master_item:
+                key: hyperv.vm.data
+          trigger_prototypes:
+            - uuid: aa5a257a94d749fa90679e5f6a0692f7
+              expression: 'last(/mif_hyperv_template/hyperv.vm.dynamic[{#VMNAME}])=0 and max(/mif_hyperv_template/hyperv.vm.mem.demand[{#VMNAME}],7d)<last(/mif_hyperv_template/hyperv.vm.mem.assigned[{#VMNAME}])*{$HV.VM.OVERPROV.RATIO} and last(/mif_hyperv_template/hyperv.vm.mem.assigned[{#VMNAME}])-max(/mif_hyperv_template/hyperv.vm.mem.demand[{#VMNAME}],7d)>{$HV.VM.OVERPROV.MIN}'
+              name: '{#VMNAME}: похоже на перевыделение ОЗУ (статическая память простаивает неделю)'
+              priority: INFO
+              description: 'У статической ВМ пиковый спрос (demand) за неделю ниже {$HV.VM.OVERPROV.RATIO} от выделенного, и впустую висит более {$HV.VM.OVERPROV.MIN}. Возможно, стоит уменьшить выделенную память или включить динамическую. Проверь график выделено/demand перед изменением — вдруг ВМ нужен пик редко.'
+              manual_close: 'YES'
           master_item:
             key: hyperv.vm.data
           lld_macro_paths:
@@ -260,3 +288,9 @@ zabbix_export:
         - macro: '{$HV.MEM.RESERVE}'
           value: '4294967296'
           description: 'Резерв ОЗУ на стабильность хоста, в байтах (по умолчанию 4 ГиБ). Вычитается при расчёте "доступно под новые ВМ". Можно переопределить для конкретного хоста на вкладке Хосты -> Макросы.'
+        - macro: '{$HV.VM.OVERPROV.RATIO}'
+          value: '0.5'
+          description: 'Порог перевыделения памяти статической ВМ: триггер срабатывает, если пиковый demand за неделю ниже этой доли от выделенной памяти (0.5 = 50%).'
+        - macro: '{$HV.VM.OVERPROV.MIN}'
+          value: 4G
+          description: 'Минимальный объём простаивающей памяти, ниже которого перевыделение не флагается (чтобы не шуметь на мелких ВМ). По умолчанию 4 ГиБ.'
