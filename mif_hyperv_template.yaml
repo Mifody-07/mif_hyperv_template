@@ -11,12 +11,12 @@ zabbix_export:
         - name: Templates/Hyper-V
       items:
         - uuid: 77fdd9ddca924a7da31e61618a1d1e27
-          name: 'Host memory: raw data'
+          name: 'Память хоста: сырые данные (JSON)'
           key: hyperv.mem.host
           history: 7d
           value_type: TEXT
         - uuid: fc569455ab27400dbb4393e96f158f4d
-          name: 'Host memory: free'
+          name: 'Память хоста: свободно'
           type: DEPENDENT
           key: hyperv.mem.host.free
           history: 7d
@@ -50,7 +50,7 @@ zabbix_export:
               priority: DISASTER
               description: 'Резерва под стабильность самого хоста уже нет. Новые ВМ не создавать — риск для работы гипервизора.'
         - uuid: 5a9d279db7a34efb939110833363db88
-          name: 'Host memory: total'
+          name: 'Память хоста: всего'
           type: DEPENDENT
           key: hyperv.mem.host.total
           history: 7d
@@ -62,7 +62,7 @@ zabbix_export:
           master_item:
             key: hyperv.mem.host
         - uuid: ba32aa03ed5249c6a9e872eb4cf2b6df
-          name: 'Host memory: used'
+          name: 'Память хоста: занято'
           type: DEPENDENT
           key: hyperv.mem.host.used
           history: 7d
@@ -74,7 +74,7 @@ zabbix_export:
           master_item:
             key: hyperv.mem.host
         - uuid: ba94c9fc43d0404ebf4c071486afda37
-          name: 'Host memory: used %'
+          name: 'Память хоста: занято, %'
           type: DEPENDENT
           key: hyperv.mem.host.used_pct
           history: 7d
@@ -87,12 +87,12 @@ zabbix_export:
           master_item:
             key: hyperv.mem.host
         - uuid: 5d9a386c665f4cc4a44966ab5b3b1785
-          name: 'VM data: raw JSON'
+          name: 'Данные по ВМ: сырой JSON'
           key: hyperv.vm.data
           history: 7d
           value_type: TEXT
         - uuid: ff3498aee93d46439df9a455de749a1d
-          name: 'Host memory: available for new VMs'
+          name: 'Память хоста: доступно под новые ВМ'
           type: CALCULATED
           key: hyperv.mem.available
           history: 7d
@@ -100,7 +100,7 @@ zabbix_export:
           units: B
           params: 'last(//hyperv.mem.host.free) - {$HV.MEM.RESERVE}'
         - uuid: 53c10bf01e0c4021b2791db2880075e5
-          name: 'Host memory: available for new VMs (worst case)'
+          name: 'Память хоста: доступно под новые ВМ (худший случай)'
           type: CALCULATED
           key: hyperv.mem.available_worstcase
           history: 7d
@@ -119,7 +119,7 @@ zabbix_export:
                 operator: NOT_MATCHES_REGEX
           item_prototypes:
             - uuid: 6cc5e54de39646ddb3f5b9588a6526bf
-              name: 'VM {#VMNAME}: dynamic memory enabled'
+              name: 'ВМ {#VMNAME}: динамическая память вкл.'
               type: DEPENDENT
               key: 'hyperv.vm.dynamic[{#VMNAME}]'
               history: 7d
@@ -130,7 +130,7 @@ zabbix_export:
               master_item:
                 key: hyperv.vm.data
             - uuid: 3dca647bd5b743be8335f94ea8e307a3
-              name: 'VM {#VMNAME}: memory assigned'
+              name: 'ВМ {#VMNAME}: память выделено'
               type: DEPENDENT
               key: 'hyperv.vm.mem.assigned[{#VMNAME}]'
               history: 7d
@@ -142,7 +142,7 @@ zabbix_export:
               master_item:
                 key: hyperv.vm.data
             - uuid: 004c7dca7df44640a0e258f44ea23f7b
-              name: 'VM {#VMNAME}: memory demand'
+              name: 'ВМ {#VMNAME}: память запрошено'
               type: DEPENDENT
               key: 'hyperv.vm.mem.demand[{#VMNAME}]'
               history: 7d
@@ -154,7 +154,7 @@ zabbix_export:
               master_item:
                 key: hyperv.vm.data
             - uuid: 2f0e42530b0447a4a696dbf70571c3fa
-              name: 'VM {#VMNAME}: memory maximum'
+              name: 'ВМ {#VMNAME}: память максимум'
               type: DEPENDENT
               key: 'hyperv.vm.mem.maximum[{#VMNAME}]'
               history: 7d
@@ -166,7 +166,7 @@ zabbix_export:
               master_item:
                 key: hyperv.vm.data
             - uuid: cce52de527c14321b06216965e1a55a3
-              name: 'VM {#VMNAME}: memory minimum'
+              name: 'ВМ {#VMNAME}: память минимум'
               type: DEPENDENT
               key: 'hyperv.vm.mem.minimum[{#VMNAME}]'
               history: 7d
@@ -178,7 +178,7 @@ zabbix_export:
               master_item:
                 key: hyperv.vm.data
             - uuid: ecf08fac57bf4b4abe08f3b4c66fc6e0
-              name: 'VM {#VMNAME}: memory startup'
+              name: 'ВМ {#VMNAME}: память стартовая'
               type: DEPENDENT
               key: 'hyperv.vm.mem.startup[{#VMNAME}]'
               history: 7d
@@ -190,7 +190,7 @@ zabbix_export:
               master_item:
                 key: hyperv.vm.data
             - uuid: 084bb59f0a1840b28afc2480c483e5f7
-              name: 'VM {#VMNAME}: state'
+              name: 'ВМ {#VMNAME}: состояние'
               type: DEPENDENT
               key: 'hyperv.vm.state[{#VMNAME}]'
               history: 7d
@@ -202,7 +202,7 @@ zabbix_export:
               master_item:
                 key: hyperv.vm.data
             - uuid: f88306575b0343d1993d480f476796ad
-              name: 'VM {#VMNAME}: status'
+              name: 'ВМ {#VMNAME}: статус памяти'
               type: DEPENDENT
               key: 'hyperv.vm.status[{#VMNAME}]'
               history: 7d
@@ -214,7 +214,7 @@ zabbix_export:
               master_item:
                 key: hyperv.vm.data
             - uuid: 62c76183659c4a73bdde503c54fe8dcb
-              name: 'VM {#VMNAME}: memory headroom (max-assigned)'
+              name: 'ВМ {#VMNAME}: запас памяти (max−выделено)'
               type: DEPENDENT
               key: 'hyperv.vm.mem.headroom[{#VMNAME}]'
               history: 7d
