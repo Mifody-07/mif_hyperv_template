@@ -1,0 +1,237 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: 55bbb702a64e43ba90676bd141681ec0
+      name: Templates/Hyper-V
+  templates:
+    - uuid: 100d1a7041624132b767cfc97cf9fc08
+      template: mif_hyperv_template
+      name: mif_hyperv_template
+      groups:
+        - name: Templates/Hyper-V
+      macros:
+        - macro: '{$HV.MEM.RESERVE}'
+          value: '4294967296'
+          description: 'Резерв ОЗУ на стабильность хоста, в байтах (по умолчанию 4 ГиБ). Вычитается при расчёте "доступно под новые ВМ". Можно переопределить для конкретного хоста на вкладке Хосты -> Макросы.'
+      items:
+        - uuid: 77fdd9ddca924a7da31e61618a1d1e27
+          name: 'Host memory: raw data'
+          key: hyperv.mem.host
+          history: 7d
+          value_type: TEXT
+        - uuid: fc569455ab27400dbb4393e96f158f4d
+          name: 'Host memory: free'
+          type: DEPENDENT
+          key: hyperv.mem.host.free
+          history: 7d
+          units: B
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.free
+          master_item:
+            key: hyperv.mem.host
+        - uuid: 5a9d279db7a34efb939110833363db88
+          name: 'Host memory: total'
+          type: DEPENDENT
+          key: hyperv.mem.host.total
+          history: 7d
+          units: B
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.total
+          master_item:
+            key: hyperv.mem.host
+        - uuid: ba32aa03ed5249c6a9e872eb4cf2b6df
+          name: 'Host memory: used'
+          type: DEPENDENT
+          key: hyperv.mem.host.used
+          history: 7d
+          units: B
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.used
+          master_item:
+            key: hyperv.mem.host
+        - uuid: ba94c9fc43d0404ebf4c071486afda37
+          name: 'Host memory: used %'
+          type: DEPENDENT
+          key: hyperv.mem.host.used_pct
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.used_pct
+          master_item:
+            key: hyperv.mem.host
+        - uuid: 5d9a386c665f4cc4a44966ab5b3b1785
+          name: 'VM data: raw JSON'
+          key: hyperv.vm.data
+          history: 7d
+          value_type: TEXT
+        - uuid: ff3498aee93d46439df9a455de749a1d
+          name: 'Host memory: available for new VMs'
+          type: CALCULATED
+          key: hyperv.mem.available
+          history: 7d
+          value_type: UNSIGNED
+          units: B
+          params: 'last(//hyperv.mem.host.free) - {$HV.MEM.RESERVE}'
+        - uuid: 53c10bf01e0c4021b2791db2880075e5
+          name: 'Host memory: available for new VMs (worst case)'
+          type: CALCULATED
+          key: hyperv.mem.available_worstcase
+          history: 7d
+          value_type: UNSIGNED
+          units: B
+          params: 'last(//hyperv.mem.host.free) - sum(last_foreach(/{HOST.HOST}/hyperv.vm.mem.headroom[*])) - {$HV.MEM.RESERVE}'
+      discovery_rules:
+        - uuid: e0b2d6a6fc1e4d5dabb77ed83537e6d6
+          name: 'Hyper-V VM discovery'
+          type: DEPENDENT
+          key: hyperv.vm.discovery
+          filter:
+            conditions:
+              - macro: '{#VMSTATE}'
+                value: 'Off'
+                operator: NOT_MATCHES_REGEX
+          item_prototypes:
+            - uuid: 6cc5e54de39646ddb3f5b9588a6526bf
+              name: 'VM {#VMNAME}: dynamic memory enabled'
+              type: DEPENDENT
+              key: 'hyperv.vm.dynamic[{#VMNAME}]'
+              history: 7d
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.name==''{#VMNAME}'')].dynamic.first()'
+              master_item:
+                key: hyperv.vm.data
+            - uuid: 3dca647bd5b743be8335f94ea8e307a3
+              name: 'VM {#VMNAME}: memory assigned'
+              type: DEPENDENT
+              key: 'hyperv.vm.mem.assigned[{#VMNAME}]'
+              history: 7d
+              units: B
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.name==''{#VMNAME}'')].assigned.first()'
+              master_item:
+                key: hyperv.vm.data
+            - uuid: 004c7dca7df44640a0e258f44ea23f7b
+              name: 'VM {#VMNAME}: memory demand'
+              type: DEPENDENT
+              key: 'hyperv.vm.mem.demand[{#VMNAME}]'
+              history: 7d
+              units: B
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.name==''{#VMNAME}'')].demand.first()'
+              master_item:
+                key: hyperv.vm.data
+            - uuid: 2f0e42530b0447a4a696dbf70571c3fa
+              name: 'VM {#VMNAME}: memory maximum'
+              type: DEPENDENT
+              key: 'hyperv.vm.mem.maximum[{#VMNAME}]'
+              history: 7d
+              units: B
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.name==''{#VMNAME}'')].maximum.first()'
+              master_item:
+                key: hyperv.vm.data
+            - uuid: cce52de527c14321b06216965e1a55a3
+              name: 'VM {#VMNAME}: memory minimum'
+              type: DEPENDENT
+              key: 'hyperv.vm.mem.minimum[{#VMNAME}]'
+              history: 7d
+              units: B
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.name==''{#VMNAME}'')].minimum.first()'
+              master_item:
+                key: hyperv.vm.data
+            - uuid: ecf08fac57bf4b4abe08f3b4c66fc6e0
+              name: 'VM {#VMNAME}: memory startup'
+              type: DEPENDENT
+              key: 'hyperv.vm.mem.startup[{#VMNAME}]'
+              history: 7d
+              units: B
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.name==''{#VMNAME}'')].startup.first()'
+              master_item:
+                key: hyperv.vm.data
+            - uuid: 084bb59f0a1840b28afc2480c483e5f7
+              name: 'VM {#VMNAME}: state'
+              type: DEPENDENT
+              key: 'hyperv.vm.state[{#VMNAME}]'
+              history: 7d
+              value_type: CHAR
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.name==''{#VMNAME}'')].state.first()'
+              master_item:
+                key: hyperv.vm.data
+            - uuid: f88306575b0343d1993d480f476796ad
+              name: 'VM {#VMNAME}: status'
+              type: DEPENDENT
+              key: 'hyperv.vm.status[{#VMNAME}]'
+              history: 7d
+              value_type: CHAR
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.name==''{#VMNAME}'')].status.first()'
+              master_item:
+                key: hyperv.vm.data
+            - uuid: 62c76183659c4a73bdde503c54fe8dcb
+              name: 'VM {#VMNAME}: memory headroom (max-assigned)'
+              type: DEPENDENT
+              key: 'hyperv.vm.mem.headroom[{#VMNAME}]'
+              history: 7d
+              value_type: UNSIGNED
+              units: B
+              preprocessing:
+                - type: JAVASCRIPT
+                  parameters:
+                    - |-
+                      var data = JSON.parse(value);
+                      for (var i = 0; i < data.length; i++) {
+                        if (data[i].name === '{#VMNAME}') {
+                          return data[i].maximum - data[i].assigned;
+                        }
+                      }
+                      return 0;
+              master_item:
+                key: hyperv.vm.data
+          master_item:
+            key: hyperv.vm.data
+          lld_macro_paths:
+            - lld_macro: '{#VMDYNAMIC}'
+              path: $.dynamic
+            - lld_macro: '{#VMNAME}'
+              path: $.name
+            - lld_macro: '{#VMSTATE}'
+              path: $.state
+          overrides:
+            - name: 'Static memory - hide min-max'
+              step: '1'
+              filter:
+                conditions:
+                  - macro: '{#VMDYNAMIC}'
+                    value: ^0$
+              operations:
+                - operator: REGEXP
+                  value: 'memory (minimum|maximum)'
+                  discover: NO_DISCOVER
