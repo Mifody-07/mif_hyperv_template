@@ -240,20 +240,20 @@ zabbix_export:
                   discover: NO_DISCOVER
       triggers:
         - uuid: b4da679f17424e3fae509e3200b4dd91
-          expression: 'last(/{HOST.HOST}/hyperv.mem.available)<16G'
+          expression: 'last(/{HOST.HOST}/hyperv.mem.host.free)<16G'
           recovery_mode: RECOVERY_EXPRESSION
-          recovery_expression: 'last(/{HOST.HOST}/hyperv.mem.available)>17G'
-          name: '{HOST.NAME}: ОЗУ под новые ВМ заканчивается (<16 ГиБ)'
+          recovery_expression: 'last(/{HOST.HOST}/hyperv.mem.host.free)>17G'
+          name: '{HOST.NAME}: свободно ОЗУ мало, крупная ВМ уже не влезет (<16 ГиБ)'
           priority: WARNING
         - uuid: eaf717e026e14318934fc91e69163a3b
-          expression: 'last(/{HOST.HOST}/hyperv.mem.available)<8G'
+          expression: 'last(/{HOST.HOST}/hyperv.mem.host.free)<8G'
           recovery_mode: RECOVERY_EXPRESSION
-          recovery_expression: 'last(/{HOST.HOST}/hyperv.mem.available)>9G'
-          name: '{HOST.NAME}: ОЗУ под новые ВМ мало (<8 ГиБ)'
+          recovery_expression: 'last(/{HOST.HOST}/hyperv.mem.host.free)>9G'
+          name: '{HOST.NAME}: свободно ОЗУ мало, за вычетом резерва хоста почти ничего (<8 ГиБ)'
           priority: HIGH
         - uuid: 676d2b40a9c94830834316c6a69b7203
-          expression: 'last(/{HOST.HOST}/hyperv.mem.available)<4G'
+          expression: 'last(/{HOST.HOST}/hyperv.mem.host.free)<4G'
           recovery_mode: RECOVERY_EXPRESSION
-          recovery_expression: 'last(/{HOST.HOST}/hyperv.mem.available)>5G'
-          name: '{HOST.NAME}: критично мало ОЗУ под новые ВМ (<4 ГиБ)'
+          recovery_expression: 'last(/{HOST.HOST}/hyperv.mem.host.free)>5G'
+          name: '{HOST.NAME}: критично мало ОЗУ, резерва под стабильность хоста уже нет (<4 ГиБ)'
           priority: DISASTER
