@@ -246,7 +246,7 @@ zabbix_export:
             - lld_macro: '{#VMSTATE}'
               path: $.state
           overrides:
-            - name: 'Static memory - hide min-max'
+            - name: 'Static memory - hide min-max-headroom'
               step: '1'
               filter:
                 conditions:
@@ -254,7 +254,7 @@ zabbix_export:
                     value: ^0$
               operations:
                 - operator: REGEXP
-                  value: 'memory (minimum|maximum)'
+                  value: 'память (минимум|максимум)|запас памяти'
                   discover: NO_DISCOVER
       macros:
         - macro: '{$HV.MEM.RESERVE}'
