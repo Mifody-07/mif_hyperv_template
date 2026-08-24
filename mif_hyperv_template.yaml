@@ -32,20 +32,23 @@ zabbix_export:
               expression: 'last(/mif_hyperv_template/hyperv.mem.host.free)<16G'
               recovery_mode: RECOVERY_EXPRESSION
               recovery_expression: 'last(/mif_hyperv_template/hyperv.mem.host.free)>17G'
-              name: '{HOST.NAME}: свободно ОЗУ мало, крупная ВМ уже не влезет (<16 ГиБ)'
+              name: '{HOST.NAME}: свободной ОЗУ < 16 ГиБ'
               priority: WARNING
+              description: 'Большая ВМ на 16 ГБ под 1С/ЕДТ уже не влезет. Ещё поместится ВМ на 8 ГБ или несколько по 4 ГБ (реально ~12 ГБ с учётом резерва под сам хост).'
             - uuid: eaf717e026e14318934fc91e69163a3b
               expression: 'last(/mif_hyperv_template/hyperv.mem.host.free)<8G'
               recovery_mode: RECOVERY_EXPRESSION
               recovery_expression: 'last(/mif_hyperv_template/hyperv.mem.host.free)>9G'
-              name: '{HOST.NAME}: свободно ОЗУ мало, за вычетом резерва хоста почти ничего (<8 ГиБ)'
+              name: '{HOST.NAME}: свободной ОЗУ < 8 ГиБ'
               priority: HIGH
+              description: 'За вычетом резерва под хост остаётся менее 4 ГБ. Влезут только небольшие Linux-ВМ.'
             - uuid: 676d2b40a9c94830834316c6a69b7203
               expression: 'last(/mif_hyperv_template/hyperv.mem.host.free)<4G'
               recovery_mode: RECOVERY_EXPRESSION
               recovery_expression: 'last(/mif_hyperv_template/hyperv.mem.host.free)>5G'
-              name: '{HOST.NAME}: критично мало ОЗУ, резерва под стабильность хоста уже нет (<4 ГиБ)'
+              name: '{HOST.NAME}: критично мало ОЗУ < 4 ГиБ'
               priority: DISASTER
+              description: 'Резерва под стабильность самого хоста уже нет. Новые ВМ не создавать — риск для работы гипервизора.'
         - uuid: 5a9d279db7a34efb939110833363db88
           name: 'Host memory: total'
           type: DEPENDENT
